@@ -13,7 +13,10 @@ const normalizePort = val => {
   }
   return false
 }
-const port = normalizePort(process.env.PORT)
+
+const PORT = process.env.PORT
+
+const port = normalizePort(process.env.PORT || 3000)
 app.set('port', port)
 
 // Ajout de la fonction errorHandler pour rechercher les erreurs, et enregistrer dans mon serveur

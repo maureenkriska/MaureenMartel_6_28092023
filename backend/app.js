@@ -7,8 +7,22 @@ const mongoose = require('mongoose')
 // Création de l'application Express
 const app = express()
 
+// Import de dotenv
+const dotenv = require("dotenv")
+dotenv.config()
 
+// Appel de ma BDD
+const MONGOBD_CONNECT = process.env.MONGOBD_CONNECT
 
+// Connexion à mon cluster MongoDB
+mongoose.connect(MONGOBD_CONNECT, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connexion à MongoDB réussie !'))
+  .catch(() => console.log('Connexion à MongoDB échouée !'))
+
+app.use((req, res, next) => {
+  console.log('Requête reçue')
+  next()
+})
 
 app.use((req, res, next) => {
   res.status(201)
