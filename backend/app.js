@@ -12,10 +12,10 @@ const dotenv = require("dotenv")
 dotenv.config()
 
 // Appel de ma BDD
-const MONGOBD_CONNECT = process.env.MONGOBD_CONNECT
+const MONGOBD_USER = process.env.MONGOBD_USER
 
 // Connexion à mon cluster MongoDB
-mongoose.connect(MONGOBD_CONNECT, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(MONGOBD_USER, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'))
 
@@ -38,6 +38,13 @@ app.use((req, res, next) => {
 app.use((req, res) => {
   console.log('Réponse envoyée avec succès')
 })
+
+// Import de mon router User
+const userRoutes = require('./routes/user')
+
+
+app.use('/api/auth', userRoutes)
+//app.use('/api/sauces', sauceRoutes) 
 
 // Import de mon application
 module.exports = app
