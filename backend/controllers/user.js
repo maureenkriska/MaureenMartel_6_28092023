@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
+const SECRET_KEY = process.env.SECRET_KEY
 
 exports.signup = (req, res, next) => {
   bcrypt.hash(req.body.password, 10) //Fonction hachage de bcrypt, salage du mdp 10 fois
