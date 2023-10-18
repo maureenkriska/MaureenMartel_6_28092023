@@ -4,17 +4,29 @@ const jwt = require('jsonwebtoken')
 const SECRET_KEY = process.env.SECRET_KEY
 
 exports.signup = (req, res, next) => {
-  bcrypt.hash(req.body.password, 10) //Fonction hachage de bcrypt, salage du mdp 10 fois
-    .then(hash => {
-      const user = new User({
-        email:req.body.email,
-        password: hash
+  if (req.body.email && req.body.password) { // Vérification qu'un mail et un mot de passe sont présents
+    User.findOne({ email: req.body.email })  // Vérification que l'email entré ne soit pas déjà dans ma BDD
+      .then((user) => {
+        if (user) {
+          res.status(400).json({ message: 'Cette adresse mail a déjà été utilisée' })
+        } else {
+          bcrypt.hash(req.body.password, 10) //Fonction hachage de bcrypt, salage du mdp 10 fois
+            .then(hash => {
+              const user = new User({
+                email:req.body.email,
+                password: hash
+              })
+              user.save()
+                .then(() => res.status(201).json({ message: 'Utilisateur créé' })) // Création du user et enregistrement dans ma BDD
+                .catch(error => res.status(400).json({ error }))
+            })
+      .catch((error) => res.status(500).json({ error }))
+        }
       })
-      user.save()
-        .then(() => res.status(201).json({message: 'Utilsateur créé!'})) // Création du user et enregistrement dans ma BDD
-        .catch(error => res.status(400).json({ error }))
-    })
-    .catch((error) => res.status(500).json({ error }))
+      .catch((error) => res.status(500).json({ message: 'Un problème est survenu pendant que je cherchais un utilisateur avec le même email', error}))
+  } else {
+    res.status(400).json({ message: 'Requête incomplète' })
+  }  
 }
 
 exports.login = (req, res, next) => {

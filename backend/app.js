@@ -11,6 +11,8 @@ const app = express()
 const dotenv = require("dotenv")
 dotenv.config()
 
+app.use(express.json())
+
 // Appel de ma BDD
 const MONGOBD_USER = process.env.MONGOBD_USER
 
@@ -18,26 +20,6 @@ const MONGOBD_USER = process.env.MONGOBD_USER
 mongoose.connect(MONGOBD_USER, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'))
-
-app.use((req, res, next) => {
-  console.log('Requête reçue')
-  next()
-})
-
-app.use((req, res, next) => {
-  res.status(201)
-  next()
-})
-
-//Configuration d'une réponse simple (test du serveur Node, voir s'il gére correctement mon appli Express)
-app.use((req, res, next) => {
-  res.json({ message: 'Votre requête a bien été reçue'})
-  next()
-})
-
-app.use((req, res) => {
-  console.log('Réponse envoyée avec succès')
-})
 
 // Import de mon router User
 const userRoutes = require('./routes/user')

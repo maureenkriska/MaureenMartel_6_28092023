@@ -6,7 +6,8 @@ const uniqueValidator = require('mongoose-unique-validator')
 
 // Création de mon schéma de données utilisateurs
 const userSchema = mongoose.Schema({
-  email : { type: String, required: true, unique: true },
+  // Utilisation de unique pour m'assurer que deux utilisateurs ne puissent pas créer un compte avec la même adresse mail
+  email : { type: String, required: true, unique: true }, 
   password : { type: String, required: true }
 })
 
