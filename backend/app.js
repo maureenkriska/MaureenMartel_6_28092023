@@ -7,11 +7,15 @@ const mongoose = require('mongoose')
 // Création de l'application Express
 const app = express()
 
+const path = require('path')
+
 // Import de dotenv
 const dotenv = require("dotenv")
 dotenv.config()
 
 app.use(express.json())
+
+app.use('/images', express.static(path.join(__dirname, 'images')))
 
 // Appel de ma BDD
 const MONGOBD_USER = process.env.MONGOBD_USER
