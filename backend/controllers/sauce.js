@@ -1,16 +1,16 @@
 const Sauce = require('../models/sauce')
-const fs = require('fs') // Va me permettre de gérer des fichiers
+const fs = require('fs') // Va me permettre de gérer des fichiers (écriture, suppression de fichiers)
 
 exports.getAllSauces= (req, res, next) => {
   Sauce.find()
     .then(sauces => res.status(200).json(sauces))
-    .catch(error => res.status(500).json({ error }))
+    .catch(error => res.status(500).json({ message:'Echec lors de la recherche de sauces dans la base de données', error }))    
 }
 
 exports.getOneSauce = ( req, res, next) => {
   Sauce.findOne({ _id: req.params.id })
     .then(sauce => res.status(200).json(sauce))
-    .catch(error => res.status(404).json({ error }))
+    .catch(error => res.status(404).json({ message:"Echec lors de la recherche d'une sauce particulière", error }))    
 }
 
 exports.createSauce = (req, res, next) => {
@@ -25,11 +25,11 @@ exports.createSauce = (req, res, next) => {
   })
   sauce.save()
     .then(() => res.status(201).json({ message : 'Sauce enregistrée' }))
-    .catch(error => res.status(500).json({ error }))
+    .catch(error => res.status(500).json({ message:"La sauce n'a pas pu être enregistrée", error }))      
 }
 
 exports.updateSauce = (req, res, next) => {
-  if (req.file) { //Si ma requête contient une image => propriété file de l'objet requête créée par le middleware multer
+  if (req.file) { //Si ma requête contient une image issue de form-data => propriété file de l'objet requête créée par le middleware multer
     Sauce.findOne({ _id: req.params.id })
       .then(sauce => {
         if (req.userId === sauce.userId) { // Je vérifie que ce soit bien le propriétaire de la sauce qui veux faire la modification
@@ -41,13 +41,13 @@ exports.updateSauce = (req, res, next) => {
           fs.unlink(`images/${filename}`, () => {
             Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
               .then(() => res.status(200).json({ message: 'Sauce modifiée' }))
-              .catch(error => res.status(400).json({ message: "Update échoué", error }))       //message à réécrire
+              .catch(error => res.status(400).json({ message: "Votre modification n'a pas pu être effectuée", error }))
           })
         } else {
           res.status(403).json({ message: 'Requête refusée, seul le créateur de la sauce peut la modifier' })
         }
       })
-      .catch(error => res.status(404).json({ error }))   //message à ajouter
+      .catch(error => res.status(404).json({ message: "La sauce à modifier n'a pas été trouvée", error }))
   } else {
     Sauce.findOne({ _id: req.params.id })
       .then(sauce => {
@@ -55,12 +55,12 @@ exports.updateSauce = (req, res, next) => {
           const sauceObject = { ...req.body }
           Sauce.updateOne({ _id: req.params.id}, { ...sauceObject, _id: req.params.id })
             .then(() => res.status(200).json({ message : 'Sauce modifiée'}))
-            .catch(error => res.status(400).json({ error }))      //message à rajouter
+            .catch(error => res.status(400).json({ message : "La sauce n'a pas pu être modifiée", error }))
         } else {
           res.status(403).json({ message: 'Requête refusée, seul le créateur de la sauce peut la modifier' })  
         }          
       })
-      .catch(error => res.status(404).json({ error }))   //message d'erreur 
+      .catch(error => res.status(404).json({ message: "La sauce à modifier n'a pas été trouvée", error }))
   }
 }
 
@@ -70,15 +70,16 @@ exports.deleteSauce = (req, res, next) => {
       if (req.userId === sauce.userId) {  //Je vérifie que ce soit bien le propriétaire de la sauce qui veux faire la modification
         const filename = sauce.imageUrl.split('/images/')[1]
         fs.unlink(`images/${filename}`, () => {
+          console.log(`${filename} supprimée`)
           Sauce.deleteOne({ _id: req.params.id })
-            .then(() => res.status(204).json({ message: 'Sauce retirée' }))
-            .catch(error => res.status(400).json({ error }))   //message d'erreur 
+            .then(() => res.status(204).json({ message: 'Sauce retirée et image détruite' }))
+            .catch(error => res.status(400).json({ message: "La sauce n'a pas pu être supprimée", error }))   
         })
       } else {
         res.status(403).json({ message: 'Requête refusée, seul le créateur de la sauce peut la supprimer' })
       }
     })
-    .catch(error => res.status(404).json({ error }))   //message d'erreur 
+    .catch(error => res.status(404).json({ message: "La sauce à supprimer n'a pas été trouvée", error }))   
 }
 
 exports.likeStatus = (req, res, next) => {
@@ -107,7 +108,7 @@ exports.likeStatus = (req, res, next) => {
           }
           Sauce.updateOne({ _id: sauceId }, { ...sauceObjectLike, _id: sauceId})
             .then(() => res.status(200).json({ message : 'Votre like a bien été ajouté' }))
-            .catch(error => res.status(400).json({ error }))   //message d'erreur 
+            .catch(error => res.status(400).json({ message: "Votre like n'a pas pu être supprimé", error }))   
           break // Me permet de mettre fin à l'instruction en cours à fin de ne pas rentrer dans les instructions suivantes
         case 0:
           if (sauce.usersLiked.includes(userId)) {  //Je vérifie que je suis dans le tableau des likes => Si oui, modification des likes et du tableau
@@ -128,7 +129,7 @@ exports.likeStatus = (req, res, next) => {
           }
           Sauce.updateOne({ _id: sauceId}, { ...sauceObject, _id: sauceId })
             .then(() => res.status(200).json({ message : 'Votre like ou dislike a bien été annulé' }))
-            .catch(error => res.status(400).json({ error }))   //message d'erreur 
+            .catch(error => res.status(400).json({ message: "Votre like ou dislike n'a pas été annulé", error }))   
           break // Me permet de mettre fin à l'instruction en cours à fin de ne pas rentrer dans les instructions suivantes
         case -1:
           if (!sauce.usersDisliked.includes(userId)) {  //Si je n'appartiens pas déjà au tableau des dislikes,
@@ -148,12 +149,12 @@ exports.likeStatus = (req, res, next) => {
           }
           Sauce.updateOne({ _id: sauceId}, {...sauceObjectDislike, _id: sauceId})
             .then(() => res.status(200).json({ message: 'Votre dislike a bien été ajouté' }))
-            .catch(error => res.status(400).json({ error }))  //message d'erreur
+            .catch(error => res.status(400).json({ message: "Votre dislike n'a pas été ajouté", error }))  
           break // Me permet de mettre fin à l'instruction en cours à fin de ne pas rentrer dans les instructions suivantes
         default:
           res.status(400).json({ message: 'Mauvaise requête' })
           break // Me permet de mettre fin à l'instruction en cours à fin de ne pas rentrer dans les instructions suivantes
       }
     })
-    .catch(error => res.status(404).json({ error }))  //message d'erreur => Je n'ai pas réussi à trouver la sauce
-}
+    .catch(error => res.status(404).json({ message: "La sauce demandée n'a pas été trouvée", error }))  
+  }
