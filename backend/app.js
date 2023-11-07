@@ -16,6 +16,7 @@ const MONGOBD_USER = process.env.MONGOBD_USER
 
 // Import de mon router User
 const userRoutes = require('./routes/user')
+const sauceRoutes = require('./routes/sauce')
 
 const app = express()
 
@@ -47,7 +48,7 @@ app.use(mongoSanitize({
 }))
 
 app.use('/api/auth', userRoutes)
-//app.use('/api/sauces', sauceRoutes) 
+app.use('/api/sauce', sauceRoutes) 
 
 // Import de mon application
 module.exports = app

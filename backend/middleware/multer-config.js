@@ -19,4 +19,4 @@ const storage = multer.diskStorage({        // Contient la logique pour indiquer
 
 
 // Exportation de multer configuré et indication de générer uniquement les téléchargements de fichiers image
-module.exports = multer({storage: storage}).single('images')
+module.exports = multer({storage: storage}).single('image')
